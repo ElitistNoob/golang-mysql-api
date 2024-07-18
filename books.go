@@ -104,7 +104,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, "No matching param in url found", http.StatusInternalServerError)
+		http.Error(w, "No matching param in url found", http.StatusBadRequest)
 		fmt.Printf("No matching param in url found: %v", err)
 		return
 	}
@@ -125,13 +125,14 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func createBook(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
 	var book Book
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
 		http.Error(w, "Invalid Request Payload", http.StatusBadRequest)
 		log.Printf("Invalid Request Payload: %v", err)
 		return
 	}
-	defer r.Body.Close()
 
 	createdAt := time.Now()
 	book.CreatedAt = createdAt
@@ -167,6 +168,8 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateBook(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
