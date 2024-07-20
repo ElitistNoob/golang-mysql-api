@@ -1,0 +1,55 @@
+{{ block "index" . }}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <link href="css/style.css" rel="stylesheet" />
+    <script
+      src="https://unpkg.com/htmx.org@2.0.1"
+      integrity="sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div>{{ template "form" . }}</div>
+    <div
+      id="books-list"
+      hx-get="/api/books"
+      hx-trigger="load"
+      hx-target="#books-list"
+      hx-swap="innerHTML"
+    >
+      Loading...
+    </div>
+  </body>
+</html>
+
+{{ end }} {{ define "form" }}
+<form hx-post="/api/books" hx-target="#books-list" hx-swap="innerHTML">
+  <label for="isbn">ISBN</label>
+  <input type="text" name="isbn" />
+  <label for="title">Title</label>
+  <input type="text" name="title" />
+  <label for="author">Author</label>
+  <input type="text" name="author" />
+  <label for="publisher">publisher</label>
+  <input type="text" name="publisher" />
+  <button type="submit">Add Book</button>
+</form>
+{{ end }} {{ define "book-list" }}
+<div>
+  {{ range .Books }}
+  <div>
+    <h3>{{ .Title }}</h3>
+    <p>{{ .Author }}</p>
+    <div>
+      <span>{{ .Publisher }}</span>
+      <span>{{ .ISBN }}</span>
+    </div>
+    <button hx-delete="/api/books/{{.Id}}" hx-trigger="click">X</button>
+  </div>
+  {{ end }}
+</div>
+{{ end }}
