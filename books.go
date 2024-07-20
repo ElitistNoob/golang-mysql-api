@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"text/template"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -24,7 +25,14 @@ type Book struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+type Books = []Book
+
+type Data struct {
+	Books Books
+}
+
 var db *sql.DB
+var tmpl *template.Template
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -57,6 +65,7 @@ func main() {
 	r.HandleFunc("/api/books", createBook).Methods("POST")
 	r.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
 	r.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
+	r.HandleFunc("/", render).Methods("GET")
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
@@ -65,6 +74,14 @@ func main() {
 
 func initDatabase(dsn string) (*sql.DB, error) {
 	return sql.Open("mysql", dsn)
+}
+
+func render(w http.ResponseWriter, r *http.Request) {
+	tmpl = template.Must(template.ParseGlob("templates/*.html"))
+	if err := tmpl.ExecuteTemplate(w, "index.html", nil); err != nil {
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err)
+	}
 }
 
 func getBooks(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +93,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var books []Book
+	var books Books
 	for rows.Next() {
 		var book Book
 		if err := rows.Scan(&book.Id, &book.ISBN, &book.Title, &book.Author, &book.Publisher, &book.CreatedAt); err != nil {
@@ -93,10 +110,12 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(books); err != nil {
-		http.Error(w, "Failed to encode books to JSON", http.StatusInternalServerError)
-		log.Println("Failed to encode books to JSON: err")
-		return
+	data := Data{
+		Books: books,
+	}
+
+	if err := tmpl.ExecuteTemplate(w, "book-list", data); err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -125,20 +144,14 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 }
 
 func createBook(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
-	var book Book
-	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
-		http.Error(w, "Invalid Request Payload", http.StatusBadRequest)
-		log.Printf("Invalid Request Payload: %v", err)
-		return
-	}
-
+	isbn := r.FormValue("isbn")
+	title := r.FormValue("title")
+	author := r.FormValue("author")
+	publisher := r.FormValue("publisher")
 	createdAt := time.Now()
-	book.CreatedAt = createdAt
 
 	result, err := db.Exec(`INSERT INTO books (isbn, title, author, publisher, created_at) VALUES (?,?,?,?,?)`,
-		book.ISBN, book.Title, book.Author, book.Publisher, book.CreatedAt)
+		isbn, title, author, publisher, createdAt)
 	if err != nil {
 		http.Error(w, "Error inserting record", http.StatusInternalServerError)
 		log.Printf("Error inserting record: %v", err)
@@ -152,19 +165,7 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	response := map[string]interface{}{
-		"message": "Book created successfully",
-		"bookId":  bookId,
-	}
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-		fmt.Printf("Error encoding response: %v", err)
-		return
-	}
+	log.Printf("Book: %v, successfully created", bookId)
 }
 
 func updateBook(w http.ResponseWriter, r *http.Request) {
@@ -237,17 +238,5 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	response := map[string]interface{}{
-		"message": fmt.Sprintf("Book deleted successfully: %v", rowsDeleted),
-		"Book":    id,
-	}
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-		log.Printf("Error encoding response: %v", err)
-		return
-	}
+	log.Printf(" %v Book deleted successfully", rowsDeleted)
 }
