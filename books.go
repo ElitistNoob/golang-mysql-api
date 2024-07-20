@@ -65,7 +65,7 @@ func main() {
 	r.HandleFunc("/api/books", createBook).Methods("POST")
 	r.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
 	r.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
-	r.HandleFunc("/", render).Methods("GET")
+	r.HandleFunc("/", render)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
