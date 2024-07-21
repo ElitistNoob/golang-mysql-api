@@ -50,6 +50,9 @@ func main() {
 	r.HandleFunc("/api/books/{id}", booksHandler.DeleteBook).Methods("DELETE")
 	r.HandleFunc("/", webHandler.Render)
 
+	fs := http.FileServer(http.Dir("./dist"))
+  r.PathPrefix("/dist/").Handler(http.StripPrefix("/dist/", fs))
+
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
 	}

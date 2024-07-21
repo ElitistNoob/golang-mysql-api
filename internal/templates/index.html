@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title></title>
-    <link href="css/style.css" rel="stylesheet" />
+    <link href="/dist/output.css" rel="stylesheet" />
     <script
       src="https://unpkg.com/htmx.org@2.0.1"
       integrity="sha384-QWGpdj554B4ETpJJC9z+ZHJcA/i59TyjxEPXiiUgN2WmTyV5OEZWCD6gQhgkdpB/"
@@ -27,15 +27,28 @@
 </html>
 
 {{ end }} {{ define "form" }}
-<form hx-post="/api/books" hx-target="#books-list" hx-swap="innerHTML">
-  <label for="isbn">ISBN</label>
-  <input type="text" name="isbn" />
-  <label for="title">Title</label>
-  <input type="text" name="title" />
-  <label for="author">Author</label>
-  <input type="text" name="author" />
-  <label for="publisher">publisher</label>
-  <input type="text" name="publisher" />
+<form
+  class="grid gap-4"
+  hx-post="/api/books"
+  hx-target="#books-list"
+  hx-swap="innerHTML"
+>
+  <div>
+    <label for="isbn">ISBN</label>
+    <input type="text" name="isbn" />
+  </div>
+  <div>
+    <label for="title">Title</label>
+    <input type="text" name="title" />
+  </div>
+  <div>
+    <label for="author">Author</label>
+    <input type="text" name="author" />
+  </div>
+  <div>
+    <label for="publisher">publisher</label>
+    <input type="text" name="publisher" />
+  </div>
   <button type="submit">Add Book</button>
 </form>
 {{ end }} {{ define "book-list" }}
