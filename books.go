@@ -165,6 +165,8 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	getBooks(w, r)
+
 	log.Printf("Book: %v, successfully created", bookId)
 }
 
@@ -238,5 +240,6 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+  getBooks(w,r)
 	log.Printf(" %v Book deleted successfully", rowsDeleted)
 }
