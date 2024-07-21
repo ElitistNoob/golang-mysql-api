@@ -8,6 +8,7 @@ import (
 
 	"example.com/restapi/internal/api/books"
 	"example.com/restapi/internal/db"
+	"example.com/restapi/internal/web"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -40,13 +41,14 @@ func main() {
 	r := mux.NewRouter()
 
 	booksHandler := books.NewHandler(db)
+	webHandler := web.NewHandler()
 
 	r.HandleFunc("/api/books", booksHandler.GetBooks).Methods("GET")
 	r.HandleFunc("/api/books/{id}", booksHandler.GetBook).Methods("GET")
 	r.HandleFunc("/api/books", booksHandler.CreateBook).Methods("POST")
 	r.HandleFunc("/api/books/{id}", booksHandler.UpdateBook).Methods("PUT")
 	r.HandleFunc("/api/books/{id}", booksHandler.DeleteBook).Methods("DELETE")
-	r.HandleFunc("/", booksHandler.Render)
+	r.HandleFunc("/", webHandler.Render)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)

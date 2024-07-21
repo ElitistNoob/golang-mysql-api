@@ -21,11 +21,11 @@ type Handler struct {
 func NewHandler(db *sql.DB) *Handler {
 	return &Handler{
 		db:   db,
-		tmpl: template.Must(template.ParseGlob("templates/*.html")),
+		tmpl: template.Must(template.ParseGlob("internal/templates/*.html")),
 	}
 }
 
-func (h *Handler) GetBooks(w http.ResponseWriter, _ *http.Request) {
+func (h *Handler) GetBooks(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.Query(`SELECT * FROM books`)
 	if err != nil {
 		http.Error(w, "Failed to execute the database query", http.StatusInternalServerError)

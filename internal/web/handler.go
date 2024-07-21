@@ -12,7 +12,7 @@ type Handler struct {
 
 func NewHandler() *Handler {
 	return &Handler{
-		tmpl: template.Must(template.ParseGlob("templates/*.html")),
+		tmpl: template.Must(template.ParseGlob("internal/templates/*.html")),
 	}
 }
 
