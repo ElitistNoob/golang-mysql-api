@@ -25,13 +25,6 @@ func NewHandler(db *sql.DB) *Handler {
 	}
 }
 
-func (h *Handler) Render(w http.ResponseWriter, _ *http.Request) {
-	if err := h.tmpl.ExecuteTemplate(w, "index.html", nil); err != nil {
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
-		log.Printf("Error executing template: %v", err)
-	}
-}
-
 func (h *Handler) GetBooks(w http.ResponseWriter, _ *http.Request) {
 	rows, err := h.db.Query(`SELECT * FROM books`)
 	if err != nil {
